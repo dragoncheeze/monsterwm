@@ -169,6 +169,7 @@ static void sigchld(int sig);
 static void stack(int x, int y, int w, int h, const Desktop *d);
 static void tile(Desktop *d);
 static void unmapnotify(XEvent *e);
+static void warpcursor(Client *c);
 static Bool wintoclient(Window w, Client **c, Desktop **d);
 static int xerror(Display *dis, XErrorEvent *ee);
 static int xerrorstart(Display *dis, XErrorEvent *ee);
@@ -583,6 +584,7 @@ void focus(Client *c, Desktop *d) {
     XChangeProperty(dis, root, netatoms[NET_ACTIVE], XA_WINDOW, 32,
                     PropModeReplace, (unsigned char *)&d->curr->win, 1);
 
+    warpcursor(d->curr);
     XSync(dis, False);
 }
 
@@ -670,11 +672,12 @@ void grid(int x, int y, int w, int h, const Desktop *d) {
     for (cols = 0; cols <= n/2; cols++) if (cols*cols >= n) break; /* emulate square root */
     if (n == 0) return; else if (n == 5) cols = 2;
 
-    int rows = n/cols, ch = h - BORDER_WIDTH, cw = (w - BORDER_WIDTH)/(cols ? cols:1);
+    int rows = n/cols, ch = h - USELESSGAP, cw = (w - USELESSGAP)/(cols ? cols:1);
     for (Client *c = d->head; c; c = c->next) {
         if (ISFFT(c)) continue; else ++i;
         if (i/rows + 1 > cols - n%cols) rows = n/cols + 1;
-        XMoveResizeWindow(dis, c->win, x + cn*cw, y + rn*ch/rows, cw - BORDER_WIDTH, ch/rows - BORDER_WIDTH);
+        XMoveResizeWindow(dis, c->win, x + cn*cw + USELESSGAP, y + rn*ch/rows + USELESSGAP,
+                   cw - 2*BORDER_WIDTH - USELESSGAP, ch/rows - 2*BORDER_WIDTH - USELESSGAP);
         if (++rn >= rows) { rn = 0; cn++; }
     }
 }
@@ -814,7 +817,8 @@ void mousemotion(const Arg *arg) {
  * each window should cover all the available screen space
  */
 void monocle(int x, int y, int w, int h, const Desktop *d) {
-    for (Client *c = d->head; c; c = c->next) if (!ISFFT(c)) XMoveResizeWindow(dis, c->win, x, y, w, h);
+    for (Client *c = d->head; c; c = c->next) if (!ISFFT(c))
+        XMoveResizeWindow(dis, c->win, x + USELESSGAP, y + USELESSGAP, w - 2*USELESSGAP, h - 2*USELESSGAP);
 }
 
 /**
@@ -1153,21 +1157,24 @@ void stack(int x, int y, int w, int h, const Desktop *d) {
      * should be added to the first stack client (p) so that it satisfies sasz,
      * and also, does not result in gaps created on the bottom of the screen.
      */
-    if (c && !n) XMoveResizeWindow(dis, c->win, x, y, w - 2*BORDER_WIDTH, h - 2*BORDER_WIDTH);
+    if (c && !n) XMoveResizeWindow(dis, c->win, x + USELESSGAP, y + USELESSGAP,
+           w - 2*(BORDER_WIDTH + USELESSGAP), h - 2*(BORDER_WIDTH + USELESSGAP));
     if (!c || !n) return; else if (n > 1) { p = (z - d->sasz)%n + d->sasz; z = (z - d->sasz)/n; }
 
     /* tile the first non-floating, non-fullscreen window to cover the master area */
-    if (b) XMoveResizeWindow(dis, c->win, x, y, w - 2*BORDER_WIDTH, ma - BORDER_WIDTH);
-    else   XMoveResizeWindow(dis, c->win, x, y, ma - BORDER_WIDTH, h - 2*BORDER_WIDTH);
+    if (b) XMoveResizeWindow(dis, c->win, x + USELESSGAP, y + USELESSGAP,
+    w - 2*(BORDER_WIDTH + USELESSGAP), ma - 2*(BORDER_WIDTH + USELESSGAP));
+    else   XMoveResizeWindow(dis, c->win, x + USELESSGAP, y + USELESSGAP,
+    ma - 2*(BORDER_WIDTH + USELESSGAP), h - 2*(BORDER_WIDTH + USELESSGAP));
 
     /* tile the next non-floating, non-fullscreen (and first) stack window adding p */
     for (c = c->next; c && ISFFT(c); c = c->next);
-    int cw = (b ? h:w) - 2*BORDER_WIDTH - ma, ch = z - BORDER_WIDTH;
-    if (b) XMoveResizeWindow(dis, c->win, x, y += ma, ch - BORDER_WIDTH + p, cw);
-    else   XMoveResizeWindow(dis, c->win, x += ma, y, cw, ch - BORDER_WIDTH + p);
+    int ch = z - 2*BORDER_WIDTH - USELESSGAP, cw = (b ? h:w) - 2*BORDER_WIDTH - ma - USELESSGAP;
+    if (b) XMoveResizeWindow(dis, c->win, x += USELESSGAP, y += ma, ch - USELESSGAP + p, cw);
+    else   XMoveResizeWindow(dis, c->win, x += ma, y += USELESSGAP, cw, ch - USELESSGAP + p);
 
     /* tile the rest of the non-floating, non-fullscreen stack windows */
-    for (b ? (x += ch+p):(y += ch+p), c = c->next; c; c = c->next) {
+    for (b ? (x += z+p-USELESSGAP):(y += z+p-USELESSGAP), c = c->next; c; c = c->next) {
         if (ISFFT(c)) continue;
         if (b) { XMoveResizeWindow(dis, c->win, x, y, ch, cw); x += z; }
         else   { XMoveResizeWindow(dis, c->win, x, y, cw, ch); y += z; }
@@ -1237,6 +1244,15 @@ Bool wintoclient(Window w, Client **c, Desktop **d) {
     for (int i = 0; i < DESKTOPS && !*c; i++)
         for (*d = &desktops[i], *c = (*d)->head; *c && (*c)->win != w; *c = (*c)->next);
     return (*c != NULL);
+}
+
+/**
+ * warps the mouse pointer to the center of the client c
+ */
+void warpcursor(Client *c) {
+    XWindowAttributes wa;
+    if (c && XGetWindowAttributes(dis, c->win, &wa))
+        XWarpPointer(dis, None, c->win, 0,0,0,0, wa.width/2, wa.height/2);
 }
 
 /**

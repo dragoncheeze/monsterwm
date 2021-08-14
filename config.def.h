@@ -1,5 +1,4 @@
 /* see LICENSE for copyright and license */
-
 #include <X11/XF86keysym.h>
 #ifndef CONFIG_H
 #define CONFIG_H
@@ -12,13 +11,13 @@
 
 /** generic settings **/
 #define MASTER_SIZE     0.5
-#define SHOW_PANEL      False     /* show panel by default on exec */
+#define SHOW_PANEL      False      /* show panel by default on exec */
 #define TOP_PANEL       True      /* False means panel is on bottom */
 #define PANEL_HEIGHT    18        /* 0 for no space for panel, thus no panel */
 #define DEFAULT_MODE    TILE      /* initial layout/mode: TILE MONOCLE BSTACK GRID FLOAT */
 #define ATTACH_ASIDE    True      /* False means new window is master */
 #define FOLLOW_WINDOW   False     /* follow the window when moved to a different desktop */
-#define FOLLOW_MOUSE    True      /* focus the window the mouse just entered */
+#define FOLLOW_MOUSE    True     /* focus the window the mouse just entered */
 #define CLICK_TO_FOCUS  True      /* focus an unfocused window when clicked  */
 #define FOCUS_BUTTON    Button3   /* mouse button to be used along with CLICK_TO_FOCUS */
 #define BORDER_WIDTH    2         /* window border width */
@@ -27,6 +26,7 @@
 #define MINWSZ          50        /* minimum window size in pixels  */
 #define DEFAULT_DESKTOP 0         /* the desktop to focus initially */
 #define DESKTOPS        4         /* number of desktops - edit DESKTOPCHANGE keys to suit */
+#define USELESSGAP      5         /* the size of the useless gap in pixels */
 
 /**
  * open applications to specified desktop with specified mode.
@@ -56,6 +56,7 @@ static const char *menucmd2[] = { "drun",  NULL };
 static const char *upvol[]   = { "/usr/bin/pactl", "set-sink-volume", "0", "+5%",     NULL };
 static const char *downvol[] = { "/usr/bin/pactl", "set-sink-volume", "0", "-5%",     NULL };
 static const char *mutevol[] = { "/usr/bin/pactl", "set-sink-mute",   "0", "toggle",  NULL };
+
 #define DESKTOPCHANGE(K,N) \
     {  MOD1,             K,              change_desktop, {.i = N}}, \
     {  MOD1|ShiftMask,   K,              client_to_desktop, {.i = N}},
@@ -63,6 +64,7 @@ static const char *mutevol[] = { "/usr/bin/pactl", "set-sink-mute",   "0", "togg
 /**
  * keyboard shortcuts
  */
+
 static Key keys[] = {
     /* modifier          key            function           argument */
     {  MOD4,             XK_b,          togglepanel,       {NULL}},
