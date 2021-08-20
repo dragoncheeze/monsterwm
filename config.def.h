@@ -56,7 +56,7 @@ static const char *browser[]  = { "brave-browser",     NULL };
 static const char *fileman[]  = { "pcmanfm",     NULL };
 static const char *menucmd[]  = { "dmenu_run", "-nb", "black", "-sb", "white", "-sf", "black", "-i",  NULL };
 static const char *menucmd2[] = { "drun",  NULL };
-static const char *clock[]    = { "xclock", "-d", "-brief", "-twelve", NULL };
+static const char *clock[]    = { "xclock", "-d", "-brief", "-twelve", "-face", "Ubuntu-24", NULL };
 /* Pulseaudio volume sinks (adjust default to whatever device u need controlled) */
 static const char *upvol[]   = { "/usr/bin/pactl", "set-sink-volume", "0", "+5%",     NULL };
 static const char *downvol[] = { "/usr/bin/pactl", "set-sink-volume", "0", "-5%",     NULL };
