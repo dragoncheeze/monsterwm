@@ -21,12 +21,12 @@
 #define CLICK_TO_FOCUS  True      /* focus an unfocused window when clicked  */
 #define FOCUS_BUTTON    Button3   /* mouse button to be used along with CLICK_TO_FOCUS */
 #define BORDER_WIDTH    1         /* window border width */
-#define FOCUS           "#ff950e" /* focused window border color    */
-#define UNFOCUS         "#444444" /* unfocused window border color  */
+#define FOCUS           "#d65d0e" /* focused window border color    */
+#define UNFOCUS         "#282828" /* unfocused window border color  */
 #define MINWSZ          50        /* minimum window size in pixels  */
 #define DEFAULT_DESKTOP 0         /* the desktop to focus initially */
 #define DESKTOPS        4         /* number of desktops - edit DESKTOPCHANGE keys to suit */
-#define USELESSGAP      2         /* the size of the useless gap in pixels */
+#define USELESSGAP      1         /* the size of the useless gap in pixels */
 
 /**
  * open applications to specified desktop with specified mode.
@@ -51,11 +51,12 @@ static const AppRule rules[] = { \
  * custom commands
  * must always end with ', NULL };'
  */
-static const char *termcmd[]  = { "st",     NULL };
+static const char *termcmd[]  = { "alacritty",     NULL };
 static const char *browser[]  = { "brave-browser",     NULL };
+static const char *lutris[]  = { "lutris",     NULL };
 static const char *fileman[]  = { "pcmanfm",     NULL };
-static const char *menucmd[]  = { "dmenu_run", "-nb", "black", "-sb", "#ff950e", "-sf", "black", "-i",  NULL };
-static const char *menucmd2[] = { "drun",  NULL };
+static const char *menucmd[]  = { "dmenu_run", "-nb", "#282828", "-sb", "#cc241d", "-sf", "#282828", "-i",  NULL };
+static const char *rofi[]  = { "rofi", "-show", "drun", "-show-icons", NULL };
 static const char *clock[]    = { "xclock", "-d", "-brief", "-twelve", "-face", "Ubuntu-24", NULL };
 /* Pulseaudio volume sinks (adjust default to whatever device u need controlled) */
 static const char *upvol[]   = { "/usr/bin/pactl", "set-sink-volume", "0", "+5%",     NULL };
@@ -101,9 +102,10 @@ static Key keys[] = {
     {  MOD1,             XK_Return,     spawn,             {.com = termcmd}},
     {  MOD1,             XK_n,          spawn,             {.com = fileman}},
     {  MOD1,             XK_p,          spawn,             {.com = menucmd}},
-    {  MOD1|SHIFT,       XK_p,          spawn,             {.com = menucmd2}},
+    {  MOD1|SHIFT,       XK_p,          spawn,             {.com = rofi}},
     {  MOD1,             XK_b,          spawn,             {.com = browser}},
     {  MOD1,             XK_c,          spawn,             {.com = clock}},
+    {  MOD1,             XK_g,          spawn,             {.com = lutris}},
    	{ 0,                            XF86XK_AudioLowerVolume, spawn, {.v = downvol } },
 	{ 0,                            XF86XK_AudioMute, spawn, {.v = mutevol } },
 	{ 0,                            XF86XK_AudioRaiseVolume, spawn, {.v = upvol   } },
